@@ -1,0 +1,12 @@
+{
+  "name": "net.harrybosch.toolbarinator",
+  "version": "1.0.0",
+  "displayName": "Toolbarinator",
+  "author": 
+  {
+    "name": "Harry Bosch",
+    "email": "harrybosch03@gmail.com",
+    "url": "https://github.com/HarryBosch03/Toolbarinator"
+  },
+  "unity": "2021.3"
+}

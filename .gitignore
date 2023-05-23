@@ -1,0 +1,26 @@
+### Unity Gitignore by Yours Truly ###
+ 
+### Cache Directories ###
+.idea/
+.vs/
+.vscode/
+
+### Unity Auto Generated Directories ###
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+
+### Opt in or out depending on whether this is for personal or group work. ###
+[Uu]ser[Ss]ettings/
+
+### Unity Auto Generated Files ###
+*.sln
+*.csproj
+*.csproj.DotSettings
+
+### Specifics ###
+Assets/Audio/Shrek.mp3
+Assets/Audio/Shrek.mp3.meta

@@ -1,0 +1,11 @@
+﻿using Toolbarinator.Editor;
+using UnityEngine;
+using UnityEditor;
+
+    #ROOTNAMESPACEBEGIN#
+public class #SCRIPTNAME# : ToolbarElement
+{
+    public override void ToolbarLeft() { }
+    public override void ToolbarRight() { }
+}
+#ROOTNAMESPACEEND#

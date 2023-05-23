@@ -1,0 +1,13 @@
+{
+  "name": "net.harrybosch.sharinator",
+  "version": "1.0.0",
+  "displayName": "Bosching Machine Presents, The Sharinator",
+  "description": "A small, simple, and customizable screenshotting tool.",
+  "author": 
+  {
+    "name": "Harry Bosch",
+    "email": "harrybosch03@gmail.com",
+    "url": "https://github.com/HarryBosch03/VRTest"
+  },
+  "unity": "2021.3"
+}

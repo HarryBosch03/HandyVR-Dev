@@ -1,0 +1,16 @@
+{
+    "name": "Sharinator.Editor",
+    "rootNamespace": "Sharinator",
+    "references": ["GUID:d00b95b764581d941b045f6decfdf203"],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

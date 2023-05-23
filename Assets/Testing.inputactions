@@ -1,0 +1,34 @@
+{
+    "name": "Testing",
+    "maps": [
+        {
+            "name": "New action map",
+            "id": "4333074a-dd63-4b33-a0c4-1431c27869f7",
+            "actions": [
+                {
+                    "name": "New action",
+                    "type": "Button",
+                    "id": "401d8d19-9afb-4217-93e0-04793ff8a02d",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "Press(behavior=2)",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "a87034b9-bb6e-4cb6-8ffc-6ec358016d32",
+                    "path": "<OculusTouchController>{LeftHand}/triggerPressed",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "New action",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}
