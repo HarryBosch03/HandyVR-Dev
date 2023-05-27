@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using HandyVR.Bindables;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace HandyVR.Player.Hands
 {
@@ -15,22 +16,31 @@ namespace HandyVR.Player.Hands
         [Tooltip("The angle of the cone used to find Pickups to create a Detached Binding")]
         [SerializeField] private float detachedBindingAngle;
         [Tooltip("The magnitude of the force applied to a Detached Binding")]
-        [SerializeField] private float detachedBindingForce = 400.0f;
+        [SerializeField] private float detachedBindingSpeed = 400.0f;
         [Tooltip("The Minimum force applied to the Detached Binding")]
-        [SerializeField] private float detachedBindingMinForce = 50.0f;
+        [SerializeField] private float detachedBindingInvalidationTime = 1.0f;
+        [SerializeField] [Range(0.0f, 1.0f)]private float detachedBindingInvalidationThreshold = 0.5f;
+
+        [Space] 
+        [SerializeField] private Vector3 bindingOffsetTranslation;
+        [SerializeField] private Vector3 bindingOffsetRotation;
 
         private PlayerHand hand;
         private LineRenderer lines;
+        private Vector3 lastPosition;
+        private float detachedBindingInvalidationTimer;
 
         private static HashSet<VRBindable> existingDetachedBindings = new();
         public VRBinding ActiveBinding { get; private set; }
         public VRBindable DetachedBinding { get; private set; }
         public VRBindable PointingAt { get; private set; }
 
-        public Vector3 Position => hand.Target.position;
-        public Quaternion Rotation => hand.Target.rotation;
-        public bool Flipped => hand.Flipped;
-        public int Priority => IBindingTarget.HandPriority;
+        public Vector3 BindingPosition => hand.Target.position + bindingOffsetTranslation;
+        public Quaternion BindingRotation => hand.Target.rotation * Quaternion.Euler(bindingOffsetRotation);
+
+        public bool IsBindingFlipped => hand.Flipped;
+        
+        public int BindingPriority => IBindingTarget.HandPriority;
         public GameObject gameObject => hand.gameObject;
         public Transform transform => hand.transform;
 
@@ -93,16 +103,29 @@ namespace HandyVR.Player.Hands
 
             // If the object has the speed to get to the players hand this frame, remove the detached binding
             // and create an actual active binding, then bail.
-            var delta = detachedBindingForce * Time.deltaTime / rb.mass;
-            if (distance < delta * Time.deltaTime)
+            var frameSpeed = detachedBindingSpeed * Time.deltaTime / rb.mass;
+            if (distance < frameSpeed * Time.deltaTime)
             {
                 RemoveDetachedBinding(true);
                 return;
             }
 
             // Apply the force
-            var force = direction * (delta * (distance + detachedBindingMinForce / detachedBindingForce)) - rb.velocity;
+            var force = direction * frameSpeed - rb.velocity;
             rb.AddForce(force, ForceMode.VelocityChange);
+
+            var delta = rb.position - lastPosition;
+            var distanceTraveled = delta.magnitude;
+            var invalid = distanceTraveled < frameSpeed * detachedBindingInvalidationThreshold;
+
+            detachedBindingInvalidationTimer += (invalid ? 1.0f : -1.0f) * Time.deltaTime / detachedBindingInvalidationTime;
+            if (detachedBindingInvalidationTimer >= 1.0f)
+            {
+                RemoveDetachedBinding(false);
+            }
+            detachedBindingInvalidationTimer = Mathf.Clamp01(detachedBindingInvalidationTimer);
+
+            lastPosition = rb.position;
         }
 
         /// <summary>
@@ -211,7 +234,7 @@ namespace HandyVR.Player.Hands
             if (!pointingAt.Rigidbody) return;
             if (existingDetachedBindings.Contains(pointingAt)) return;
             
-            if (pointingAt.ActiveBinding && pointingAt.ActiveBinding.target.Priority < Priority)
+            if (pointingAt.ActiveBinding && pointingAt.ActiveBinding.target.BindingPriority < BindingPriority)
             {
                 pointingAt.ActiveBinding.Deactivate();
             }

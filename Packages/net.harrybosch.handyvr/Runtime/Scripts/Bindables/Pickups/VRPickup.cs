@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using HandyVR.Bindables.Targets;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace HandyVR.Bindables.Pickups
 {
@@ -14,21 +16,23 @@ namespace HandyVR.Bindables.Pickups
     {
         [Tooltip("A optional binding type used for sockets.")]
         [SerializeField] private VRBindingType bindingType;
-        [Tooltip("Positional offset for when the object is held.")]
-        [SerializeField] private Vector3 boundTranslation;
-        [Tooltip("Rotational offset for when the object is held.")]
-        [SerializeField] private Quaternion boundRotation = Quaternion.identity;
-        [Tooltip("Should the object flip over when in different hands.")]
-        [SerializeField] private bool flipWithHand;
-        [Tooltip("If the object should flip, what addition rotation should be applied.")]
-        [SerializeField] private Quaternion additionalFlipRotation = Quaternion.identity;
+        [Tooltip("List of offset for when the object is Bound.")]
+        [SerializeField] private List<BoundPose> boundPoses;
+        [SerializeField] private int defaultPose;
+        [SerializeField] private int socketPose;
+        [SerializeField] private bool handCanUseSocketPose;
 
         private readonly List<ColliderData> colliderData = new();
 
         public event Action BindingActivatedEvent;
         public event Action BindingDeactivatedEvent;
-        
-        
+
+        private int boundPoseIndex;
+
+        public BoundPose DefaultPose => GetPose(HandPoseIndex(defaultPose));
+        public BoundPose SocketPose => GetPose(socketPose);
+        public BoundPose CurrentBoundPose => GetPose(boundPoseIndex);
+
         // Physics material for when the object is held, this is to stop wierd jitter caused from bouncy objects.
         private static PhysicMaterial overridePhysicMaterial;
         private static PhysicMaterial OverridePhysicMaterial
@@ -50,6 +54,11 @@ namespace HandyVR.Bindables.Pickups
         }
         
         public VRBindingType BindingType => bindingType;
+
+        public static readonly BoundPose DefaultBoundPose = new()
+        {
+            name = "Class Default",
+        };
         
         public override void OnBindingActivated(VRBinding binding)
         {
@@ -61,8 +70,27 @@ namespace HandyVR.Bindables.Pickups
                 data.lastMaterial = data.collider.sharedMaterial;
                 data.collider.sharedMaterial = OverridePhysicMaterial;
             }
+
+            ChangePose(ActiveBinding, i => defaultPose);
             
             BindingActivatedEvent?.Invoke();
+        }
+
+        public void CycleHoldPose()
+        {
+            ChangePose(ActiveBinding, i => i + 1);
+        }
+
+        public int HandPoseIndex(int i) => handCanUseSocketPose || i != boundPoseIndex ? i : i + 1;
+        public void ChangePose(VRBinding binding, Func<int, int> change)
+        {
+            if (binding.target is VRSocket)
+            {
+                boundPoseIndex = socketPose;
+                return;
+            }
+            
+            boundPoseIndex = HandPoseIndex(change(boundPoseIndex));
         }
 
         public override void OnBindingDeactivated(VRBinding binding)
@@ -103,14 +131,18 @@ namespace HandyVR.Bindables.Pickups
         {
             if (!ActiveBinding) return;
 
+            var translationOffset = CurrentBoundPose.translationOffset;
+            var rotationOffset = CurrentBoundPose.rotationOffset;
+            var additionalFlipRotation = CurrentBoundPose.additionalFlipRotation;
+
             // Calculate force needed to be applied to translate the object from its current position
             // to the binding position ( + offset ) with zero velocity.
-            var force = (BindingPosition + boundTranslation - Rigidbody.position) / Time.deltaTime - Rigidbody.velocity;
+            var force = (BindingPosition + translationOffset - Rigidbody.position) / Time.deltaTime - Rigidbody.velocity;
             Rigidbody.AddForce(force, ForceMode.VelocityChange);
 
             // Calculate the finalized rotational offset.
-            var offset = boundRotation.normalized;
-            if (flipWithHand && BindingFlipped) offset = additionalFlipRotation;
+            var offset = Quaternion.Euler(rotationOffset);
+            if (BindingFlipped) offset *= Quaternion.Euler(additionalFlipRotation);
             
             // Calculate the angle axis rotation needed to move from our current rotation to the target ( + offset )
             var delta = BindingRotation * offset * Quaternion.Inverse(Rigidbody.rotation);
@@ -119,6 +151,12 @@ namespace HandyVR.Bindables.Pickups
             // Calculate a torque to move the rigidbody to the target rotation with zero angular velocity.
             var torque = axis * (angle * Mathf.Deg2Rad / Time.deltaTime) - Rigidbody.angularVelocity;
             Rigidbody.AddTorque(torque, ForceMode.VelocityChange);
+        }
+
+        public BoundPose GetPose(int i)
+        {
+            if (boundPoses == null || boundPoses.Count <= 0) return DefaultBoundPose;
+            return boundPoses.Ring(i);
         }
 
         /// <summary>
@@ -134,6 +172,15 @@ namespace HandyVR.Bindables.Pickups
                 this.collider = collider;
                 lastMaterial = collider.sharedMaterial;
             }
+        }
+
+        [System.Serializable]
+        public class BoundPose
+        {
+            public string name = "New Bound Pose";
+            public Vector3 translationOffset;
+            public Vector3 rotationOffset;
+            public Vector3 additionalFlipRotation;
         }
     }
 }

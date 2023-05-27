@@ -10,6 +10,8 @@ namespace HandyVR.Bindables
     [CreateAssetMenu(menuName = "HandyVR/VR Binding Type")]
     public class VRBindingType : ScriptableObject
     {
-        
+        [SerializeField] private bool debug;
+
+        public bool Debug => debug;
     }
 }

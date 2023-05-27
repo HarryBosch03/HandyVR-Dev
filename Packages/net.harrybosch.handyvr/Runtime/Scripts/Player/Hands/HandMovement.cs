@@ -14,6 +14,10 @@ namespace HandyVR.Player.Hands
         [SerializeField] [Range(0.0f, 1.0f)] private float forceScaling = 1.0f;
 
         private PlayerHand hand;
+        
+        private bool wasBound;
+        private Vector3 boundOffsetTranslation;
+        private Quaternion boundOffsetRotation;
 
         public void Init(PlayerHand hand)
         {
@@ -33,6 +37,12 @@ namespace HandyVR.Player.Hands
 
         public void MoveTo(Vector3 newPosition, Quaternion newRotation)
         {
+            if (hand.ActiveBinding != wasBound)
+            {
+                BindingChanged(hand.ActiveBinding && !wasBound);
+            }
+            wasBound = hand.ActiveBinding;
+            
             // If the hand has a binding, just teleport hand to tracked position, the
             // bound object will have their own collision.
             var rb = hand.Rigidbody;
@@ -55,6 +65,21 @@ namespace HandyVR.Player.Hands
             delta.ToAngleAxis(out var angle, out var axis);
             var torque = axis * (angle * Mathf.Deg2Rad / Time.deltaTime) - rb.angularVelocity;
             rb.AddTorque(torque * forceScaling, ForceMode.VelocityChange);
+        }
+
+        private void BindingChanged(bool down)
+        {
+            var other = hand.ActiveBinding.bindable.transform;
+            if (down)
+            {
+                boundOffsetTranslation = other.InverseTransformPoint(hand.transform.position);
+                boundOffsetRotation = hand.transform.rotation * Quaternion.Inverse(other.rotation);
+            }
+            else
+            {
+                hand.transform.position = other.TransformPoint(boundOffsetTranslation);
+                hand.transform.rotation = other.rotation * boundOffsetRotation;
+            }
         }
 
         public void OnCollision(Collision collision)

@@ -34,9 +34,9 @@ namespace HandyVR.Bindables
         
         public static readonly List<VRBindable> All = new();
 
-        public Vector3 BindingPosition => ActiveBinding.target.Position;
-        public Quaternion BindingRotation => ActiveBinding.target.Rotation;
-        public bool BindingFlipped => ActiveBinding.target.Flipped;
+        public Vector3 BindingPosition => ActiveBinding.target.BindingPosition;
+        public Quaternion BindingRotation => ActiveBinding.target.BindingRotation;
+        public bool BindingFlipped => ActiveBinding.target.IsBindingFlipped;
 
         protected virtual void Awake()
         {

@@ -49,16 +49,13 @@ namespace HandyVR.Player
             // Group objects to keep hierarchy neat.
             Target = transform.parent;
             Utility.Scene.BreakHierarchyAndGroup(transform);
-            
-            Func<XRController> controller = chirality switch
-            {
-                Chirality.Left => () => XRController.leftHand,
-                Chirality.Right => () => XRController.rightHand,
-                _ => throw new ArgumentOutOfRangeException()
-            };
+
+            var chiralData = GetChiralData();
+            gameObject.name = string.Format(chiralData.nameTemplate, gameObject.name);
+            Target.gameObject.name = string.Format(chiralData.nameTemplate, Target.gameObject.name);
 
             // Create input module with correct controller.
-            input = new HandInput(controller);
+            input = new HandInput(chiralData.controller);
             
             Rigidbody = gameObject.GetOrAddComponent<Rigidbody>();
             Colliders = GetComponentsInChildren<Collider>();
@@ -128,6 +125,30 @@ namespace HandyVR.Player
         {
             Left,
             Right,
+        }
+
+        public ChiralData GetChiralData()
+        {
+            return chirality switch
+            {
+                Chirality.Left => new ChiralData
+                {
+                    controller = () => XRController.leftHand, 
+                    nameTemplate = "{0}.L",
+                },
+                Chirality.Right => new ChiralData
+                {
+                    controller = () => XRController.rightHand, 
+                    nameTemplate = "{0}.R",
+                },
+                _ => throw new ArgumentOutOfRangeException()
+            };
+        }
+        
+        public class ChiralData
+        {
+            public Func<XRController> controller;
+            public string nameTemplate;
         }
     }
 }

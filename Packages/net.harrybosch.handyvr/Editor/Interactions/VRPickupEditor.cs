@@ -1,12 +1,13 @@
 using HandyVR.Bindables.Pickups;
 using UnityEditor;
+using UnityEngine;
 using static UnityEditor.EditorGUILayout;
 using static UnityEngine.GUILayout;
 
-namespace HandyVREditor.Editor.Interactions
+namespace HandyVR.Editor.Interactions
 {
     [CustomEditor(typeof(VRPickup))]
-    public class VRPickupEditor : Editor
+    public class VRPickupEditor : Editor<VRPickup>
     {
         private bool handlesControlBoundOffset;
         private bool handlesControlFlipped;
@@ -14,15 +15,26 @@ namespace HandyVREditor.Editor.Interactions
         public override void OnInspectorGUI()
         {
             EditorGUI.BeginChangeCheck();
-            
+
             Section("Socket Settings", () => { PropertyField(serializedObject.FindProperty("bindingType")); });
 
+            PropertyField(serializedObject.FindProperty("boundPoses"));
             Section("Bound Pose Settings", () =>
             {
-                PropertyField(serializedObject.FindProperty("boundTranslation"));
-                PropertyField(serializedObject.FindProperty("boundRotation"));
-                PropertyField(serializedObject.FindProperty("flipWithHand"));
-                PropertyField(serializedObject.FindProperty("additionalFlipRotation"));
+                PropertyField(serializedObject.FindProperty("defaultPose"));
+                PropertyField(serializedObject.FindProperty("socketPose"));
+                PropertyField(serializedObject.FindProperty("handCanUseSocketPose"));
+
+                Space();
+
+                var defaultPoseName = Target.DefaultPose.name;
+                var socketPoseName = Target.SocketPose.name;
+
+                using (new EditorGUI.DisabledScope(true))
+                {
+                    TextField("Default Pose", defaultPoseName);
+                    TextField("Socket Pose", socketPoseName);
+                }
             });
 
             Section("Editor Actions", () =>

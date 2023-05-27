@@ -17,7 +17,6 @@ namespace HandyVR.Bindables
 
         /// <summary>
         /// Creates binding between a bindable object and a Pose Driver.
-        /// [ IF YOU CAN, BINDINGS SHOULD BE CONSTRUCTED THROUGH <see cref="VRBindable.CreateBinding"/> ]
         /// </summary>
         /// <param name="bindable">Object that will be bound</param>
         /// <param name="target">Target Object to bind to</param>
@@ -49,7 +48,7 @@ namespace HandyVR.Bindables
 
             Utility.DeferredCall.Wait(
                 () => Utility.Physics.IgnoreCollision(bindable.gameObject, target.gameObject, false),
-                new WaitUntil(GetAreClear(bindable.gameObject, target.gameObject)));
+                new WaitForSeconds(0.2f));
             active = false;
         }
 

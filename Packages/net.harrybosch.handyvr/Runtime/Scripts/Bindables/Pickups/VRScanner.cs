@@ -17,11 +17,16 @@ namespace HandyVR.Bindables.Pickups
         [SerializeField] private string template;
         [SerializeField] private TMP_Text uiText;
 
+        [Space] 
+        [SerializeField] private ParticleSystem scannerFX;
+
         public void Trigger(PlayerHand hand, VRBindable bindable, HandInput.InputWrapper input)
         {
             uiText.text = string.Empty;
+
+            scannerFX.SyncPlayState(input.Down);
             
-            if (!input.Down) return;   
+            if (!input.Down) return;
             
             var ray = new Ray(scannerTarget.position, scannerTarget.forward);
             if (!Physics.SphereCast(ray, radius, out var hit)) return;

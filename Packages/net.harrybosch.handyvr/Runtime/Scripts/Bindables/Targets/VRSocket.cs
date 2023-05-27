@@ -13,26 +13,38 @@ namespace HandyVR.Bindables.Targets
     [AddComponentMenu("HandyVR/Socket", Reference.AddComponentMenuOrder.Components)]
     public sealed class VRSocket : MonoBehaviour, IBindingTarget
     {
-        [Tooltip("Collision radius used to check for Pickups")]
-        [SerializeField] private float searchRadius = 0.04f;
-        [Tooltip("Whether the list of types acts as a blacklist or a whitelist.\n  Whitelist: Block Pickups without a type in the list\n  Blacklist: Block Pickups with a type in the list")]
-        [SerializeField] private ListMode listMode = ListMode.Whitelist;
-        [Tooltip("List of types to check against to allow binding.")]
-        [SerializeField] private List<VRBindingType> list = new();
-        [Tooltip("Behaviour if the object being bound has no type.")]
-        [SerializeField] private ListMode nullTypeBehaviour;
+        [Tooltip("Used for Collision Ignorance")] [SerializeField]
+        private GameObject root;
 
-        [Space] 
-        [Tooltip("Time to wait after loosing a binding to look for another one")] 
-        [SerializeField] private float newBindingDelay = 0.5f;
+        [Tooltip("Collision radius used to check for Pickups")] [SerializeField]
+        private float searchRadius = 0.04f;
+
+        [Tooltip("Whether the list of types acts as a blacklist or a whitelist.\n  Whitelist: Block Pickups without a type in the list\n  Blacklist: Block Pickups with a type in the list")] [SerializeField]
+        private ListMode listMode = ListMode.Whitelist;
+
+        [Tooltip("List of types to check against to allow binding.")] [SerializeField]
+        private List<VRBindingType> list = new();
+
+        [Tooltip("Behaviour if the object being bound has no type.")] [SerializeField]
+        private ListMode nullTypeBehaviour;
+
+        [Space] [Tooltip("Time to wait after loosing a binding to look for another one")] [SerializeField]
+        private float newBindingDelay = 0.5f;
 
         private VRBinding activeBinding;
-        private float lastBoundTime;
+        private float lastBoundTime = float.MinValue;
 
-        public Vector3 Position => transform.position;
-        public Quaternion Rotation => transform.rotation;
-        public bool Flipped => false;
-        public int Priority => IBindingTarget.SocketPriority;
+        public Vector3 BindingPosition => transform.position;
+        public Quaternion BindingRotation => transform.rotation;
+        public bool IsBindingFlipped => false;
+        public int BindingPriority => IBindingTarget.SocketPriority;
+        GameObject IBindingTarget.gameObject => root;
+        Transform IBindingTarget.transform => root.transform;
+
+        private void Awake()
+        {
+            if (!root) root = gameObject;
+        }
 
         public void OnBindingActivated(VRBinding binding)
         {
@@ -61,7 +73,7 @@ namespace HandyVR.Bindables.Targets
         private void CheckForNewBinding()
         {
             if (Time.time - lastBoundTime < newBindingDelay) return;
-            
+
             var queryList = Physics.OverlapSphere(transform.position, searchRadius);
             foreach (var query in queryList)
             {
@@ -71,7 +83,7 @@ namespace HandyVR.Bindables.Targets
                 if (!Filter(pickup)) continue;
 
                 new VRBinding(pickup, this);
-                
+
                 break;
             }
         }
@@ -95,6 +107,8 @@ namespace HandyVR.Bindables.Targets
                     _ => throw new ArgumentOutOfRangeException()
                 };
             }
+
+            if (pickup.BindingType.Debug) return true;
 
             return listMode switch
             {

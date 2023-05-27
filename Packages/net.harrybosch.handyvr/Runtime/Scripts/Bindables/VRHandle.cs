@@ -22,8 +22,8 @@ namespace HandyVR.Bindables
         {
             base.OnBindingActivated(binding);
 
-            lastPosition = binding.target.Position;
-            lastRotation = binding.target.Rotation;
+            lastPosition = binding.target.BindingPosition;
+            lastRotation = binding.target.BindingRotation;
         }
 
         private void FixedUpdate()

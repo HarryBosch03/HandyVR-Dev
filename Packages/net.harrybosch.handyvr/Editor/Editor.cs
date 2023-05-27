@@ -2,16 +2,20 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace HandyVREditor.Editor
+namespace HandyVR.Editor
 {
-    public class Editor : UnityEditor.Editor
+    public class Editor<T> : UnityEditor.Editor where T : UnityEngine.Object
     {
-        public string KeyFromName(string name)
+        public T Target => (T)base.target;
+
+        public static float LineHeight => EditorGUIUtility.singleLineHeight;
+
+        protected string KeyFromName(string name)
         {
             return $"{target.GetInstanceID()}.{name}";
         }
 
-        public void Section(string name, Action body, bool fallback = false)
+        protected void Section(string name, Action body, bool fallback = false)
         {
             var foldout = EditorPrefs.GetBool(KeyFromName(name), fallback);
             foldout = EditorGUILayout.BeginFoldoutHeaderGroup(foldout, name);
@@ -26,12 +30,14 @@ namespace HandyVREditor.Editor
             EditorGUILayout.EndFoldoutHeaderGroup();
         }
 
-        public static void Div()
+        protected static void Div()
         {
             var rect = EditorGUILayout.GetControlRect();
             rect.y += rect.height / 2.0f;
             rect.height = 1.0f;
             EditorGUI.DrawRect(rect, new Color(1.0f, 1.0f, 1.0f, 0.1f));
         }
+
+        protected virtual void Space() => EditorGUILayout.Space(LineHeight / 2.0f);
     }
 }

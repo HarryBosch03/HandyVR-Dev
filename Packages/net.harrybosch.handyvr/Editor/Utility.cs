@@ -2,7 +2,7 @@
 using UnityEditor;
 using Object = UnityEngine.Object;
 
-namespace HandyVREditor.Editor
+namespace HandyVR.Editor
 {
     public static class Utility
     {

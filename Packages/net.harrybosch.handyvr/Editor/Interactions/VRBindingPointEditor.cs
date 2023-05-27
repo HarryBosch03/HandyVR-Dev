@@ -1,10 +1,10 @@
 using HandyVR.Bindables.Targets;
 using UnityEditor;
 
-namespace HandyVREditor.Editor.Interactions
+namespace HandyVR.Editor.Interactions
 {
     [CustomEditor(typeof(VRSocket))]
-    public class VRBindingPointEditor : Editor
+    public class VRBindingPointEditor : Editor<VRSocket>
     {
 
     }

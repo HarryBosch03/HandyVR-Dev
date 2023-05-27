@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -6,7 +7,7 @@ namespace HandyVR
     /// <summary>
     /// Extension methods used in HandyVR.
     /// </summary>
-    public static class Extensions
+    internal static class Extensions
     {
         public static class NameComparisons
         {
@@ -52,6 +53,29 @@ namespace HandyVR
         public static void SetRay(this LineRenderer renderer, Vector3 a, Vector3 b, bool worldSpace = true)
         {
             renderer.SetLine(a, a + b, worldSpace);
+        }
+        
+        public static void SyncPlayState(this ParticleSystem system, bool state)
+        {
+            switch (system.isPlaying)
+            {
+                case true when state == false:
+                    system.Stop();
+                    break;
+                case false when state == true:
+                    system.Play();
+                    break;
+            }
+        }
+
+        public static void Template(this string template, ref string target)
+        {
+            target = string.Format(template, target);
+        }
+
+        public static T Ring<T>(this List<T> list, int i)
+        {
+            return list[(i % list.Count + list.Count) % list.Count];
         }
     }
 }

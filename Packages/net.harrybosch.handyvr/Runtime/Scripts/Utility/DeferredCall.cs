@@ -22,7 +22,7 @@ namespace HandyVR.Utility
             }
         }
 
-        public static void Wait(Action callback, IEnumerator waitFor)
+        public static void Wait(Action callback, YieldInstruction waitFor)
         {
             IEnumerator routine()
             {
