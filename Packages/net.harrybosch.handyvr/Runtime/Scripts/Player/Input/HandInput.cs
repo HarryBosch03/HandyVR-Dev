@@ -8,7 +8,7 @@ using UnityEngine.XR;
 namespace HandyVR.Player.Input
 {
     /// <summary>
-    /// Submodule used for managing the <see cref="PlayerHand"/> input.
+    /// Submodule used for managing the <see cref="VRHand"/> input.
     /// </summary>
     public sealed class HandInput
     {

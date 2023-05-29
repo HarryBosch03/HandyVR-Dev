@@ -1,3 +1,4 @@
+using HandyVR.Interfaces;
 using UnityEngine;
 
 namespace HandyVR.Player.Hands
@@ -5,8 +6,9 @@ namespace HandyVR.Player.Hands
     /// <summary>
     /// Submodule for animating hand.
     /// </summary>
-    [System.Serializable]
-    public class HandAnimator
+    [SelectionBase]
+    [DisallowMultipleComponent]
+    public class VRHandAnimator : MonoBehaviour, IVRHandModule
     {
         [Tooltip("Amount of smoothing to apply to inputs. Zero == no smooth")]
         [SerializeField] private float smoothing = 0.1f;
@@ -16,28 +18,23 @@ namespace HandyVR.Player.Hands
 
         private float gripValue, triggerValue;
         
-        private PlayerHand hand;
+        private VRHand hand;
         private Animator animator;
 
-        public void Init(PlayerHand hand)
+        public void Init(VRHand hand)
         {
             this.hand = hand;
-            animator = hand.GetComponentInChildren<Animator>();
+            animator = GetComponentInChildren<Animator>();
         }
 
         public void Update()
         {
             float tGripValue, tTriggerValue;
+
+            var bindingController = hand.BindingController as VRHandBinding;
          
-            // Overrides target values based on conditions that a different pose may be appropriate.
-            // Matches grip pose if something is being held.
-            if (hand.BindingController.DetachedBinding)
-            {
-                tTriggerValue = 1.0f;
-                tGripValue = 1.0f;
-            }
             // Matches pointing pose if an object is being pointed at.
-            else if (hand.BindingController.PointingAt)
+            if (bindingController.PointingAt != null)
             {
                 tTriggerValue = 0.0f;
                 tGripValue = 1.0f;

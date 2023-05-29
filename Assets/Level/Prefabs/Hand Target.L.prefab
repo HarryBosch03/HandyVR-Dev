@@ -1369,6 +1369,9 @@ GameObject:
   m_Component:
   - component: {fileID: 8468296114562725171}
   - component: {fileID: 8468296114562725183}
+  - component: {fileID: 2637761910046142878}
+  - component: {fileID: 8385677254004139664}
+  - component: {fileID: 2309033147005434223}
   - component: {fileID: 3624446681784877749}
   m_Layer: 0
   m_Name: Hands
@@ -1412,24 +1415,58 @@ MonoBehaviour:
   chirality: 0
   defaultHandModelChirality: 1
   flipAxis: {x: 1, y: 0, z: 0}
-  movement:
-    rumbleMagnitude: 0.2
-    forceScaling: 1
-    dislocationSpring: 100
-    dislocationDamper: 8
-    dislocationDeadzone: 0.1
-    dislocationSpeed: 15
-    dislocationLines: {fileID: 2031313310281836622}
-  binding:
-    pickupRange: 0.2
-    detachedBindingAngle: 15
-    detachedBindingSpeed: 400
-    detachedBindingInvalidationTime: 1
-    detachedBindingInvalidationThreshold: 0.5
-    bindingOffsetTranslation: {x: 0, y: 0, z: 0}
-    bindingOffsetRotation: {x: 0, y: 0, z: 180}
-  animator:
-    smoothing: 0.1
+--- !u!114 &2637761910046142878
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8468296114562725170}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c92c4ab84571eb84ea5a8a03ff6553cf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rumbleMagnitude: 0.2
+  forceScaling: 1
+  dislocationSpring: 100
+  dislocationDamper: 8
+  dislocationDeadzone: 0.1
+  dislocationSpeed: 15
+  dislocationLines: {fileID: 2031313310281836622}
+--- !u!114 &8385677254004139664
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8468296114562725170}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59a269e3117a1a6408d5754e72a16451, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pickupRange: 0.2
+  detachedBindingAngle: 15
+  detachedBindingSpeed: 400
+  detachedBindingInvalidationTime: 1
+  detachedBindingInvalidationThreshold: 0.5
+  bindingOffsetTranslation: {x: 0, y: 0, z: 0}
+  bindingOffsetRotation: {x: 0, y: 0, z: 180}
+  lines: {fileID: 5029589130065269683}
+--- !u!114 &2309033147005434223
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8468296114562725170}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3b3125a9b1b498941a79a02a46e5870e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  smoothing: 0.1
 --- !u!114 &3624446681784877749
 MonoBehaviour:
   m_ObjectHideFlags: 0

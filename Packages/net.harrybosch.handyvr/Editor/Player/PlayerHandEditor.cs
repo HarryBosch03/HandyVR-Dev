@@ -5,10 +5,10 @@ using UEditor = UnityEditor.Editor;
 
 namespace HandyVR.Editor.Player
 {
-    [CustomEditor(typeof(PlayerHand))]
+    [CustomEditor(typeof(VRHand))]
     public class PlayerHandEditor : UEditor
     {
-        private PlayerHand hand;
+        private VRHand hand;
         
         public override void OnInspectorGUI()
         {
@@ -16,7 +16,7 @@ namespace HandyVR.Editor.Player
 
             if (Application.isPlaying) return;
             
-            hand = target as PlayerHand;
+            hand = target as VRHand;
             if (!hand) return;
 
             var hasIssues = false;

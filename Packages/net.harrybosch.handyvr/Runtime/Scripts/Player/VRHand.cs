@@ -1,11 +1,9 @@
 using System;
 using HandyVR.Bindables;
 using HandyVR.Interfaces;
-using HandyVR.Player.Hands;
 using HandyVR.Player.Input;
 using UnityEngine;
 using UnityEngine.InputSystem.XR;
-using UnityEngine.Serialization;
 
 namespace HandyVR.Player
 {
@@ -14,8 +12,8 @@ namespace HandyVR.Player
     /// </summary>
     [SelectionBase]
     [DisallowMultipleComponent]
-    [AddComponentMenu("HandyVR/Hand", Reference.AddComponentMenuOrder.Components)]
-    public sealed class PlayerHand : MonoBehaviour
+    [AddComponentMenu("HandyVR/VR Hand", Reference.AddComponentMenuOrder.Components)]
+    public sealed class VRHand : MonoBehaviour
     {
         [Space]
         [SerializeField] private Chirality chirality;
@@ -24,18 +22,15 @@ namespace HandyVR.Player
         [Tooltip("Axis to flip the hand model on if there is a chiral mismatch")]
         [SerializeField] private Vector3 flipAxis = Vector3.right;
 
-        [Space] 
-        [SerializeField] private HandMovement movement;
-        [FormerlySerializedAs("ivrBinding")] [SerializeField] private HandBinding binding;
-        [SerializeField] private HandAnimator animator;
-
+        private HandInput input;
+        private IVRHandMovement movement;
+        private IVRHandBinding binding;
+        
         private Transform pointRef;
 
-        private HandInput input;
-
         public HandInput Input => input;
-        public HandBinding BindingController => binding;
-        public HandMovement Movement => movement;
+        public IVRHandBinding BindingController => binding;
+        public IVRHandMovement Movement => movement;
         public Transform HandModel { get; private set; }
 
         public VRBinding ActiveBinding => binding.ActiveBinding;
@@ -44,7 +39,7 @@ namespace HandyVR.Player
         public Transform PointRef => pointRef ? pointRef : transform;
         public Collider[] Colliders { get; private set; }
         public bool Flipped => chirality != defaultHandModelChirality;
-
+        
         private void Awake()
         {
             // Clear Parent to stop the transform hierarchy from fucking up physics.
@@ -63,10 +58,15 @@ namespace HandyVR.Player
             Colliders = GetComponentsInChildren<Collider>();
 
             // Initialize Submodules.
-            movement.Init(this);
-            binding.Init(this);
-            animator.Init(this);
 
+            movement = GetComponent<IVRHandMovement>();
+            binding = GetComponent<IVRHandBinding>();
+
+            foreach (var module in GetComponents<IVRHandModule>())
+            {
+                module.Init(this);
+            }
+            
             // Cache Hierarchy.
             pointRef = transform.DeepFind("Point Ref");
             HandModel = transform.DeepFind("Model");
@@ -85,7 +85,6 @@ namespace HandyVR.Player
 
             // Update Submodules.
             movement.MoveTo(Target.position, Target.rotation);
-            binding.FixedUpdate();
         }
 
         private void Update()
@@ -115,16 +114,9 @@ namespace HandyVR.Player
             {
                 // Show hand and animate if unbound.
                 HandModel.gameObject.SetActive(true);
-                animator.Update();
             }
         }
-
-        private void LateUpdate()
-        {
-            // Update Submodules.
-            binding.Update();
-        }
-
+        
         private void OnCollisionEnter(Collision collision)
         {
             // Callback for movement collision.

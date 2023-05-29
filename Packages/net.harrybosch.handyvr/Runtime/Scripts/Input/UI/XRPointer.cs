@@ -10,7 +10,7 @@ namespace HandyVR.Input.UI
     /// <summary>
     /// A Component to be added to the VR Hand which allows it to interact with canvases.
     /// </summary>
-    [RequireComponent(typeof(PlayerHand))]
+    [RequireComponent(typeof(VRHand))]
     [AddComponentMenu("HandyVR/Hands/XRPointer", Reference.AddComponentMenuOrder.Submenu)]
     public class XRPointer : MonoBehaviour
     {
@@ -20,7 +20,7 @@ namespace HandyVR.Input.UI
         [SerializeField] private float scrollSpeed = 1000.0f;
         
         private ExtendedPointerEventData pointerData;
-        private PlayerHand hand;
+        private VRHand hand;
 
         public HandInput.InputWrapper TriggerAction => hand.Input.Trigger;
         public HandInput.InputWrapper ThumbstickXAction => hand.Input.ThumbstickX;
@@ -33,7 +33,7 @@ namespace HandyVR.Input.UI
             // Get pointer data linked to the event system.
             // ExtendedPointerEventData gives us control over tracked device position and rotation.
             pointerData = new ExtendedPointerEventData(EventSystem.current);
-            hand = GetComponent<PlayerHand>();
+            hand = GetComponent<VRHand>();
         }
 
         private void OnEnable()

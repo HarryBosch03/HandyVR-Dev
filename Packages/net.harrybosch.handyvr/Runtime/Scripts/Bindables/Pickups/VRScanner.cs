@@ -14,14 +14,15 @@ namespace HandyVR.Bindables.Pickups
         [SerializeField] private Transform scannerTarget;
         [SerializeField] private float radius = 0.1f;
 
-        [Space] 
+        [Space]
         [SerializeField] private string template;
         [SerializeField] private TMP_Text uiText;
+        [SerializeField] private TMP_Text nameText;
 
         [Space] 
         [SerializeField] private ParticleSystem scannerFX;
 
-        public void InputCallback(PlayerHand hand, VRBindable bindable, IVRBindable.InputType type, HandInput.InputWrapper input)
+        public void InputCallback(VRHand hand, VRBindable bindable, IVRBindable.InputType type, HandInput.InputWrapper input)
         {
             switch (type)
             {
@@ -36,6 +37,7 @@ namespace HandyVR.Bindables.Pickups
         private void Scan(HandInput.InputWrapper input)
         {
             uiText.text = string.Empty;
+            nameText.text = string.Empty;
 
             scannerFX.SyncPlayState(input.Down);
             
@@ -44,10 +46,12 @@ namespace HandyVR.Bindables.Pickups
             var ray = new Ray(scannerTarget.position, scannerTarget.forward);
             if (!Physics.SphereCast(ray, radius, out var hit)) return;
 
+            nameText.text = hit.transform.name;
+
             var driver = hit.transform.GetComponentInParent<FloatDriver>();
             if (!driver) return;
 
-            uiText.text = string.Format(template, driver.Value.ToString("G2"));
+            uiText.text = string.Format(template, Mathf.Round(driver.Value * 100.0f) / 100.0f);
         }
     }
 }

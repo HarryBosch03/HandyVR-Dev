@@ -9,6 +9,6 @@ namespace HandyVR.Bindables.Pickups
     /// </summary>
     public interface IVRBindableListener
     {
-        void InputCallback(PlayerHand hand, VRBindable bindable, IVRBindable.InputType type, HandInput.InputWrapper input);
+        void InputCallback(VRHand hand, VRBindable bindable, IVRBindable.InputType type, HandInput.InputWrapper input);
     }
 }

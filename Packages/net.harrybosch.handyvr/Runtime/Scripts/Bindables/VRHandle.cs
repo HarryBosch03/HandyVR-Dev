@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 namespace HandyVR.Bindables
@@ -13,8 +12,8 @@ namespace HandyVR.Bindables
     public sealed class VRHandle : VRBindable
     {
         private bool wasBound;
-        private Vector3 lastPosition;
-        private Quaternion lastRotation;
+        private Vector3 translationOffset;
+        private Quaternion rotationOffset;
 
         private new Rigidbody rigidbody;
         public override Rigidbody Rigidbody => rigidbody;
@@ -23,8 +22,8 @@ namespace HandyVR.Bindables
         {
             base.OnBindingActivated(binding);
 
-            lastPosition = binding.target.BindingPosition;
-            lastRotation = binding.target.BindingRotation;
+            translationOffset = Quaternion.Inverse(BindingRotation) * (rigidbody.position - BindingPosition);
+            rotationOffset = Quaternion.Inverse(BindingRotation) * rigidbody.rotation;
         }
         
         private void Start()
@@ -37,21 +36,19 @@ namespace HandyVR.Bindables
             if (!ActiveBinding) return;
 
             // Match the hands position through a simple spring damper, applied to the handles parent at the handles position.
-            var diff = (BindingPosition - lastPosition);
+            var target = BindingPosition + BindingRotation * translationOffset;
+            var diff = (target - rigidbody.position);
             var pointVelocity = rigidbody.velocity;
             var force = (diff / Time.deltaTime - pointVelocity) / Time.deltaTime;
 
             rigidbody.AddForce(force, ForceMode.Acceleration);
 
-            var delta = BindingRotation * Quaternion.Inverse(lastRotation.normalized);
+            var delta = BindingRotation * rotationOffset * Quaternion.Inverse(rigidbody.rotation);
             delta.ToAngleAxis(out var angle, out var axis);
 
             // Calculate a torque to move the rigidbody to the target rotation with zero angular velocity.
             var torque = (axis * (angle * Mathf.Deg2Rad / Time.deltaTime) - rigidbody.angularVelocity) / Time.deltaTime;
             rigidbody.AddTorque(torque, ForceMode.Acceleration);
-
-            lastPosition = BindingPosition;
-            lastRotation = BindingRotation;
         }
     }
 }

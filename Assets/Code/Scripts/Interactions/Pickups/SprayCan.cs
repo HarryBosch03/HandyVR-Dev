@@ -64,7 +64,7 @@ namespace Interactions.Pickups
             residue.Emit(emitParams, 1);
         }
 
-        public void InputCallback(PlayerHand hand, VRBindable bindable, IVRBindable.InputType type, HandInput.InputWrapper input)
+        public void InputCallback(VRHand hand, VRBindable bindable, IVRBindable.InputType type, HandInput.InputWrapper input)
         {
             if (type == IVRBindable.InputType.Trigger && input.Down)
             {

@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using HandyVR.Bindables.Pickups;
+﻿using HandyVR.Bindables.Pickups;
 using HandyVR.Interfaces;
 using HandyVR.Player;
 using HandyVR.Player.Input;
@@ -15,8 +14,6 @@ namespace HandyVR.Bindables
         public VRBinding ActiveBinding { get; private set; }
         public abstract Rigidbody Rigidbody { get; }
 
-        public static readonly List<VRBindable> All = new();
-
         public Vector3 BindingPosition => ActiveBinding.target.BindingPosition;
         public Quaternion BindingRotation => ActiveBinding.target.BindingRotation;
         public bool BindingFlipped => ActiveBinding.target.IsBindingFlipped;
@@ -25,12 +22,12 @@ namespace HandyVR.Bindables
 
         protected virtual void OnEnable()
         {
-            All.Add(this);
+            IVRBindable.All.Add(this);
         }
 
         protected virtual void OnDisable()
         {
-            All.Remove(this);
+            IVRBindable.All.Remove(this);
         }
 
         public virtual void OnBindingActivated(VRBinding binding)
@@ -45,14 +42,14 @@ namespace HandyVR.Bindables
         /// <param name="from"></param>
         /// <param name="range"></param>
         /// <returns></returns>
-        public static VRBindable GetBindable(Vector3 from, float range)
+        public static IVRBindable GetBindable(Vector3 from, float range)
         {
-            VRBindable res = null;
-            foreach (var pickup in All)
+            IVRBindable res = null;
+            foreach (var pickup in IVRBindable.All)
             {
                 var d1 = (pickup.transform.position - from).sqrMagnitude;
                 if (d1 > range * range) continue;
-                if (!res)
+                if (res == null)
                 {
                     res = pickup;
                     continue;
@@ -74,7 +71,7 @@ namespace HandyVR.Bindables
         /// </summary>
         /// <param name="hand">The hand providing the input</param>
         /// <param name="action">The action that was called</param>
-        public void InputCallback(PlayerHand hand, IVRBindable.InputType inputType, HandInput.InputWrapper action)
+        public void InputCallback(VRHand hand, IVRBindable.InputType inputType, HandInput.InputWrapper action)
         {
             var listeners = GetComponentsInChildren<IVRBindableListener>();
             foreach (var listener in listeners)

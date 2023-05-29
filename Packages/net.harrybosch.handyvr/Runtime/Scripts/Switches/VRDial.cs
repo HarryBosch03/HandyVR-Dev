@@ -1,4 +1,8 @@
+using System;
 using HandyVR.Bindables;
+using HandyVR.Interfaces;
+using HandyVR.Player;
+using HandyVR.Player.Input;
 using UnityEngine;
 
 namespace HandyVR.Switches
@@ -6,57 +10,96 @@ namespace HandyVR.Switches
     [SelectionBase]
     [DisallowMultipleComponent]
     [AddComponentMenu("HandyVR/Float Drivers/Dial", Reference.AddComponentMenuOrder.Submenu)]
-    public sealed class VRDial : FloatDriver
+    public sealed class VRDial : FloatDriver, IVRHandle
     {
-        private VRHandle handle;
-        private new Rigidbody rigidbody;
-
-        private float angle;
-        private float lastRotation;
+        [SerializeField] private bool limit;
+        [SerializeField] private Vector2 range = new(-180.0f, 180.0f);
+        [SerializeField] private int steps;
+        [SerializeField] private float smoothing = 0.1f;
         
-        // Remap the local position of the handle so its offset along the Y axis represents a value between 0 and 1.
-        public override float Value => angle / 360.0f;
-
-        private void Awake()
+        private Quaternion lastRotation;
+        private float tAngle, cAngle;
+        
+        public override float Value
         {
-            // Autocomplete object if partially setup.
-            rigidbody = gameObject.GetOrAddComponent<Rigidbody>();
-            rigidbody.isKinematic = true;
-            rigidbody.useGravity = false;
-            
-            handle = GetComponentInChildren<VRHandle>();
-            SetupHandle();
+            get
+            {
+                if (!limit) return cAngle / 360.0f;
+
+                var p = Mathf.InverseLerp(range.x, range.y, cAngle);
+                return steps > 0 ? Mathf.Round(p * steps) / steps : p;
+            }   
         }
 
-        private void FixedUpdate()
+        public VRBinding ActiveBinding { get; private set; }
+        public Rigidbody Rigidbody => null;
+        public bool IsValid() => this;
+
+        private void OnEnable()
         {
-            angle += Mathf.DeltaAngle(rigidbody.rotation.eulerAngles.y, lastRotation);
-            lastRotation = rigidbody.rotation.eulerAngles.y;
+            IVRBindable.All.Add(this);
         }
 
-        private void SetupHandle()
+        private void OnDisable()
         {
-            var rigidbody = handle.gameObject.GetOrAddComponent<Rigidbody>();
-            rigidbody.mass = 0.02f;
-            rigidbody.angularDrag = 6.0f;
-            rigidbody.useGravity = false;
-            rigidbody.interpolation = RigidbodyInterpolation.Interpolate;
-            rigidbody.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
-            
-            var joint = handle.gameObject.GetOrAddComponent<ConfigurableJoint>();
-            joint.connectedBody = this.rigidbody;
-            
-            joint.xMotion = ConfigurableJointMotion.Locked;
-            joint.yMotion = ConfigurableJointMotion.Locked;
-            joint.zMotion = ConfigurableJointMotion.Locked;
-            
-            joint.angularXMotion = ConfigurableJointMotion.Locked;
-            joint.angularYMotion = ConfigurableJointMotion.Locked;
-            joint.angularZMotion = ConfigurableJointMotion.Free;
-
-            joint.autoConfigureConnectedAnchor = false;
-            joint.anchor = Vector3.zero;
-            joint.connectedAnchor = Vector3.zero;
+            IVRBindable.All.Remove(this);
         }
+
+        public void OnBindingActivated(VRBinding newBinding)
+        {
+            ActiveBinding = newBinding;
+
+            lastRotation = newBinding.target.BindingRotation;
+        }
+
+        public void OnBindingDeactivated(VRBinding oldBinding)
+        {
+            
+        }
+
+        private void Update()
+        {
+            UpdatePose();
+            ProcessBinding();
+        }
+
+        private void ProcessBinding()
+        {
+            if (!ActiveBinding) return;
+
+            var delta = ActiveBinding.target.BindingRotation * Quaternion.Inverse(lastRotation);
+            lastRotation = ActiveBinding.target.BindingRotation;
+
+            delta.ToAngleAxis(out var angle, out var axis);
+            tAngle += Vector3.Dot(transform.forward, axis) * angle;
+        }
+
+        private void UpdatePose()
+        {
+            if (limit)
+            {
+                tAngle = Mathf.Clamp(tAngle, range.x, range.y);
+            }
+
+            if (steps > 0)
+            {
+                var p = limit ? Mathf.InverseLerp(range.x, range.y, cAngle) : cAngle / 360.0f;
+                p = Mathf.Round(p * steps) / steps;
+                var t = limit ? Mathf.Lerp(range.x, range.y, p) : p * 360.0f;
+                cAngle += Mathf.DeltaAngle(t, cAngle) / smoothing * Time.deltaTime;
+            }
+            else
+            {
+                cAngle = tAngle;
+            }
+            
+            transform.localRotation = Quaternion.Euler(0.0f, 0.0f, cAngle);
+        }
+
+        public void InputCallback(VRHand hand, IVRBindable.InputType type, HandInput.InputWrapper input)
+        {
+            
+        }
+
     }
 }
