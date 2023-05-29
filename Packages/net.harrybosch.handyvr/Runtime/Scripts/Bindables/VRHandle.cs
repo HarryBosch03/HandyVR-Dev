@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace HandyVR.Bindables
@@ -14,9 +15,9 @@ namespace HandyVR.Bindables
         private bool wasBound;
         private Vector3 lastPosition;
         private Quaternion lastRotation;
-        
-        // Look for Rigidbody in parents as well.
-        public override Rigidbody GetRigidbody() => GetComponentInParent<Rigidbody>();
+
+        private new Rigidbody rigidbody;
+        public override Rigidbody Rigidbody => rigidbody;
 
         public override void OnBindingActivated(VRBinding binding)
         {
@@ -25,6 +26,11 @@ namespace HandyVR.Bindables
             lastPosition = binding.target.BindingPosition;
             lastRotation = binding.target.BindingRotation;
         }
+        
+        private void Start()
+        {
+            rigidbody = GetComponentInParent<Rigidbody>();
+        }
 
         private void FixedUpdate()
         {
@@ -32,17 +38,17 @@ namespace HandyVR.Bindables
 
             // Match the hands position through a simple spring damper, applied to the handles parent at the handles position.
             var diff = (BindingPosition - lastPosition);
-            var pointVelocity = Rigidbody.GetPointVelocity(Handle.position);
+            var pointVelocity = rigidbody.velocity;
             var force = (diff / Time.deltaTime - pointVelocity) / Time.deltaTime;
-            
-            Rigidbody.AddForce(force, ForceMode.Acceleration);
-            
+
+            rigidbody.AddForce(force, ForceMode.Acceleration);
+
             var delta = BindingRotation * Quaternion.Inverse(lastRotation.normalized);
             delta.ToAngleAxis(out var angle, out var axis);
-            
+
             // Calculate a torque to move the rigidbody to the target rotation with zero angular velocity.
-            var torque = (axis * (angle * Mathf.Deg2Rad / Time.deltaTime) - Rigidbody.angularVelocity) / Time.deltaTime;
-            Rigidbody.AddTorque(torque, ForceMode.Acceleration);
+            var torque = (axis * (angle * Mathf.Deg2Rad / Time.deltaTime) - rigidbody.angularVelocity) / Time.deltaTime;
+            rigidbody.AddTorque(torque, ForceMode.Acceleration);
 
             lastPosition = BindingPosition;
             lastRotation = BindingRotation;

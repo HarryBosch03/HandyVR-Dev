@@ -1,4 +1,5 @@
-﻿using HandyVR.Player;
+﻿using HandyVR.Interfaces;
+using HandyVR.Player;
 using HandyVR.Player.Input;
 
 namespace HandyVR.Bindables.Pickups
@@ -8,6 +9,6 @@ namespace HandyVR.Bindables.Pickups
     /// </summary>
     public interface IVRBindableListener
     {
-        void Trigger(PlayerHand hand, VRBindable bindable, HandInput.InputWrapper input);
+        void InputCallback(PlayerHand hand, VRBindable bindable, IVRBindable.InputType type, HandInput.InputWrapper input);
     }
 }

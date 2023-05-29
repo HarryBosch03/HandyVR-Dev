@@ -3,6 +3,7 @@ using Unity.XR.Oculus.Input;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.XR;
+using UnityEngine.XR;
 
 namespace HandyVR.Player.Input
 {
@@ -13,10 +14,11 @@ namespace HandyVR.Player.Input
     {
         // Use function rather than just a reference in case the input device is yet to be connected or disconnects through play.
         public Func<XRController> Controller { get; }
-        
+
         // Position and Rotation of the hands Target.
         public Vector3 Position { get; private set; }
         public Quaternion Rotation { get; private set; }
+        public bool Active { get; private set; }
 
         // Wrappers for controller input.
         public InputWrapper Grip { get; } = new();
@@ -32,26 +34,16 @@ namespace HandyVR.Player.Input
 
         public void Update()
         {
-            // TODO Remove, For Testing Purposes.
-// #if UNITY_EDITOR
-//             Primary.ChangedThisFrame(v =>
-//             {
-//                 if (!v) return;
-//                 UnityEditor.EditorApplication.isPaused = true;
-//             });
-// #endif
-
+            Active = false;
+            
             var controller = Controller();
             if (controller == null) return;
+            if ((InputTrackingState)controller.trackingState.ReadValue() == InputTrackingState.None) return;
 
-            // Lock controller state for debugging ease.
-#if UNITY_EDITOR
-            if (!UnityEditor.EditorApplication.isPaused)
-#endif
-            {
-                Position = controller.devicePosition.ReadValue();
-                Rotation = controller.deviceRotation.ReadValue();
-            }
+            Active = true;
+            
+            Position = controller.devicePosition.ReadValue();
+            Rotation = controller.deviceRotation.ReadValue();
 
             // Update inputs with appropriate controller type.
             switch (controller)
@@ -76,7 +68,7 @@ namespace HandyVR.Player.Input
                     break;
             }
         }
-        
+
         /// <summary>
         /// Rumbles the controller if it exists and supports it.
         /// </summary>

@@ -40,14 +40,22 @@ namespace HandyVR
 
         public static bool State(this InputAction action) => action.ReadValue<float>() > 0.5f;
 
-        public static void SetLine(this LineRenderer lines, Vector3 a, Vector3 b, bool worldSpace = true)
+        public static void SetLine(this LineRenderer lines, Vector3 a, Vector3 b, bool worldSpace = true, int subdivisions = 0)
         {
             lines.enabled = true;
-            lines.positionCount = 2;
+            lines.positionCount = 2 + subdivisions;
             lines.useWorldSpace = worldSpace;
         
             lines.SetPosition(0, a);
-            lines.SetPosition(1, b);
+            lines.SetPosition(lines.positionCount - 1, b);
+
+            for (var i = 1; i <= subdivisions; i++)
+            {
+                var percent = i / (subdivisions + 1.0f);
+                var vec = b - a;
+                var point = a + vec * percent;
+                lines.SetPosition(i, point);
+            }
         }
 
         public static void SetRay(this LineRenderer renderer, Vector3 a, Vector3 b, bool worldSpace = true)

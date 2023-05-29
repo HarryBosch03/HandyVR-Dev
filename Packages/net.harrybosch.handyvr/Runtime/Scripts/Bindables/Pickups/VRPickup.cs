@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using HandyVR.Bindables.Targets;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace HandyVR.Bindables.Pickups
 {
@@ -14,56 +13,85 @@ namespace HandyVR.Bindables.Pickups
     [AddComponentMenu("HandyVR/Basic Pickup", Reference.AddComponentMenuOrder.Components)]
     public sealed class VRPickup : VRBindable
     {
-        [Tooltip("A optional binding type used for sockets.")]
-        [SerializeField] private VRBindingType bindingType;
-        [Tooltip("List of offset for when the object is Bound.")]
-        [SerializeField] private List<BoundPose> boundPoses;
+        [Tooltip("A optional binding type used for sockets.")] [SerializeField]
+        private VRBindingType bindingType;
+
+        [Tooltip("List of offset for when the object is Bound.")] [SerializeField]
+        private List<BoundPose> boundPoses;
+
         [SerializeField] private int defaultPose;
         [SerializeField] private int socketPose;
         [SerializeField] private bool handCanUseSocketPose;
 
         private readonly List<ColliderData> colliderData = new();
 
-        public event Action BindingActivatedEvent;
-        public event Action BindingDeactivatedEvent;
-
         private int boundPoseIndex;
 
+        private new Rigidbody rigidbody;
+        public override Rigidbody Rigidbody => rigidbody;
         public BoundPose DefaultPose => GetPose(HandPoseIndex(defaultPose));
         public BoundPose SocketPose => GetPose(socketPose);
         public BoundPose CurrentBoundPose => GetPose(boundPoseIndex);
 
         // Physics material for when the object is held, this is to stop wierd jitter caused from bouncy objects.
-        private static PhysicMaterial overridePhysicMaterial;
+        // ReSharper disable once InconsistentNaming
+        private static PhysicMaterial overridePhysicMaterial_DoNotUse;
+
         private static PhysicMaterial OverridePhysicMaterial
         {
             get
             {
                 // Lazy Initialization.
-                if (overridePhysicMaterial) return overridePhysicMaterial;
-                
-                overridePhysicMaterial = new PhysicMaterial();
-                overridePhysicMaterial.name = "VR Pickup | Override Physics Material [SHOULD ONLY BE ON WHILE OBJECT IS HELD]";
-                overridePhysicMaterial.bounciness = 0.0f;
-                overridePhysicMaterial.dynamicFriction = 0.0f;
-                overridePhysicMaterial.staticFriction = 0.0f;
-                overridePhysicMaterial.bounceCombine = PhysicMaterialCombine.Multiply;
-                overridePhysicMaterial.frictionCombine = PhysicMaterialCombine.Multiply;
-                return overridePhysicMaterial;
+                if (overridePhysicMaterial_DoNotUse) return overridePhysicMaterial_DoNotUse;
+
+                overridePhysicMaterial_DoNotUse = new PhysicMaterial();
+                overridePhysicMaterial_DoNotUse.name = "VR Pickup | Override Physics Material [SHOULD ONLY BE ON WHILE OBJECT IS HELD]";
+                overridePhysicMaterial_DoNotUse.bounciness = 0.0f;
+                overridePhysicMaterial_DoNotUse.dynamicFriction = 0.0f;
+                overridePhysicMaterial_DoNotUse.staticFriction = 0.0f;
+                overridePhysicMaterial_DoNotUse.bounceCombine = PhysicMaterialCombine.Multiply;
+                overridePhysicMaterial_DoNotUse.frictionCombine = PhysicMaterialCombine.Multiply;
+                return overridePhysicMaterial_DoNotUse;
             }
         }
-        
+
         public VRBindingType BindingType => bindingType;
 
         public static readonly BoundPose DefaultBoundPose = new()
         {
             name = "Class Default",
         };
+
+        #region Unity Messages
+
+        private void Awake()
+        {
+            rigidbody = gameObject.GetOrAddComponent<Rigidbody>();
+
+            // Force rigidbody to use continuous collision for stability when held.
+            rigidbody.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+            rigidbody.interpolation = RigidbodyInterpolation.Interpolate;
+
+            var colliders = GetComponentsInChildren<Collider>();
+            foreach (var collider in colliders)
+            {
+                colliderData.Add(new ColliderData(collider));
+            }
+        }
+        
+        private void FixedUpdate()
+        {
+            MoveIfBound();
+        }
+
+        #endregion
+
+        #region Overrides
         
         public override void OnBindingActivated(VRBinding binding)
         {
             base.OnBindingActivated(binding);
-            
+
             // Cache each colliders material and override it with the special held material.
             foreach (var data in colliderData)
             {
@@ -72,16 +100,29 @@ namespace HandyVR.Bindables.Pickups
             }
 
             ChangePose(ActiveBinding, i => defaultPose);
+        }
+        
+        public override void OnBindingDeactivated(VRBinding binding)
+        {
+            base.OnBindingDeactivated(binding);
             
-            BindingActivatedEvent?.Invoke();
+            // Restore original physics material to each collider from cache.
+            foreach (var data in colliderData)
+            {
+                data.collider.sharedMaterial = data.lastMaterial;
+            }
         }
 
+        #endregion
+
+        #region Pose
+
+        public int HandPoseIndex(int i) => handCanUseSocketPose || i != boundPoseIndex ? i : i + 1;
         public void CycleHoldPose()
         {
             ChangePose(ActiveBinding, i => i + 1);
         }
 
-        public int HandPoseIndex(int i) => handCanUseSocketPose || i != boundPoseIndex ? i : i + 1;
         public void ChangePose(VRBinding binding, Func<int, int> change)
         {
             if (binding.target is VRSocket)
@@ -89,44 +130,18 @@ namespace HandyVR.Bindables.Pickups
                 boundPoseIndex = socketPose;
                 return;
             }
-            
+
             boundPoseIndex = HandPoseIndex(change(boundPoseIndex));
         }
-
-        public override void OnBindingDeactivated(VRBinding binding)
+        
+        public BoundPose GetPose(int i)
         {
-            // Restore original physics material to each collider from cache.
-            foreach (var data in colliderData)
-            {
-                data.collider.sharedMaterial = data.lastMaterial;
-            }
-            
-            BindingDeactivatedEvent?.Invoke();
+            if (boundPoses == null || boundPoses.Count <= 0) return DefaultBoundPose;
+            return boundPoses.Ring(i);
         }
-
-        // Override to add a Rigidbody if there isn't one rather than it be optional.
-        public override Rigidbody GetRigidbody() => gameObject.GetOrAddComponent<Rigidbody>();
-
-        protected override void Awake()
-        {
-            base.Awake();
-
-            // Force rigidbody to use continuous collision for stability when held.
-            Rigidbody.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
-            Rigidbody.interpolation = RigidbodyInterpolation.Interpolate;
-            
-            var colliders = GetComponentsInChildren<Collider>();
-            foreach (var collider in colliders)
-            {
-                colliderData.Add(new ColliderData(collider));
-            }
-        }
-
-        private void FixedUpdate()
-        {
-            MoveIfBound();
-        }
-
+        
+        #endregion
+        
         private void MoveIfBound()
         {
             if (!ActiveBinding) return;
@@ -137,34 +152,30 @@ namespace HandyVR.Bindables.Pickups
 
             // Calculate force needed to be applied to translate the object from its current position
             // to the binding position ( + offset ) with zero velocity.
-            var force = (BindingPosition + translationOffset - Rigidbody.position) / Time.deltaTime - Rigidbody.velocity;
-            Rigidbody.AddForce(force, ForceMode.VelocityChange);
+            var force = (BindingPosition + translationOffset - rigidbody.position) / Time.deltaTime - rigidbody.velocity;
+            rigidbody.AddForce(force, ForceMode.VelocityChange);
 
             // Calculate the finalized rotational offset.
             var offset = Quaternion.Euler(rotationOffset);
             if (BindingFlipped) offset *= Quaternion.Euler(additionalFlipRotation);
-            
+
             // Calculate the angle axis rotation needed to move from our current rotation to the target ( + offset )
-            var delta = BindingRotation * offset * Quaternion.Inverse(Rigidbody.rotation);
+            var delta = BindingRotation * offset * Quaternion.Inverse(rigidbody.rotation);
             delta.ToAngleAxis(out var angle, out var axis);
-            
+
             // Calculate a torque to move the rigidbody to the target rotation with zero angular velocity.
-            var torque = axis * (angle * Mathf.Deg2Rad / Time.deltaTime) - Rigidbody.angularVelocity;
-            Rigidbody.AddTorque(torque, ForceMode.VelocityChange);
+            var torque = axis * (angle * Mathf.Deg2Rad / Time.deltaTime) - rigidbody.angularVelocity;
+            rigidbody.AddTorque(torque, ForceMode.VelocityChange);
         }
 
-        public BoundPose GetPose(int i)
-        {
-            if (boundPoses == null || boundPoses.Count <= 0) return DefaultBoundPose;
-            return boundPoses.Ring(i);
-        }
+        #region Internal Classes
 
         /// <summary>
         /// Class for caching collider data for restoration when a pickup is released.
         /// </summary>
         private class ColliderData
         {
-            public Collider collider;
+            public readonly Collider collider;
             public PhysicMaterial lastMaterial;
 
             public ColliderData(Collider collider)
@@ -174,7 +185,7 @@ namespace HandyVR.Bindables.Pickups
             }
         }
 
-        [System.Serializable]
+        [Serializable]
         public class BoundPose
         {
             public string name = "New Bound Pose";
@@ -182,5 +193,7 @@ namespace HandyVR.Bindables.Pickups
             public Vector3 rotationOffset;
             public Vector3 additionalFlipRotation;
         }
+
+        #endregion
     }
 }

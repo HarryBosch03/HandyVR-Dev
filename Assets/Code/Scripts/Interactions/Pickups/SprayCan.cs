@@ -1,5 +1,6 @@
 ﻿using HandyVR.Bindables;
 using HandyVR.Bindables.Pickups;
+using HandyVR.Interfaces;
 using HandyVR.Player;
 using HandyVR.Player.Input;
 using UnityEngine;
@@ -63,9 +64,9 @@ namespace Interactions.Pickups
             residue.Emit(emitParams, 1);
         }
 
-        public void Trigger(PlayerHand hand, VRBindable bindable, HandInput.InputWrapper input)
+        public void InputCallback(PlayerHand hand, VRBindable bindable, IVRBindable.InputType type, HandInput.InputWrapper input)
         {
-            if (input.Down)
+            if (type == IVRBindable.InputType.Trigger && input.Down)
             {
                 spraying = true;
             }

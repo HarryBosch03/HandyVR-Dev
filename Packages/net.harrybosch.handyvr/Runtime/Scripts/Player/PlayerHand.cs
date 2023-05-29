@@ -1,9 +1,11 @@
 using System;
 using HandyVR.Bindables;
+using HandyVR.Interfaces;
 using HandyVR.Player.Hands;
 using HandyVR.Player.Input;
 using UnityEngine;
 using UnityEngine.InputSystem.XR;
+using UnityEngine.Serialization;
 
 namespace HandyVR.Player
 {
@@ -24,7 +26,7 @@ namespace HandyVR.Player
 
         [Space] 
         [SerializeField] private HandMovement movement;
-        [SerializeField] private HandBinding binding;
+        [FormerlySerializedAs("ivrBinding")] [SerializeField] private HandBinding binding;
         [SerializeField] private HandAnimator animator;
 
         private Transform pointRef;
@@ -79,6 +81,8 @@ namespace HandyVR.Player
 
         private void FixedUpdate()
         {
+            if (!Input.Active) return;
+
             // Update Submodules.
             movement.MoveTo(Target.position, Target.rotation);
             binding.FixedUpdate();
@@ -88,6 +92,12 @@ namespace HandyVR.Player
         {
             // Update Submodules.
             Input.Update();
+
+            if (!Input.Active)
+            {
+                HandModel.gameObject.SetActive(false);
+                return;
+            }
             
             // Update Targets Pose.
             Target.position = Input.Position;
@@ -99,7 +109,7 @@ namespace HandyVR.Player
                 HandModel.gameObject.SetActive(false);
                 
                 // Pass inputs to bound object.
-                ActiveBinding.bindable.Trigger(this, Input.Trigger);
+                ActiveBinding.bindable.InputCallback(this, IVRBindable.InputType.Trigger, Input.Trigger);
             }
             else
             {

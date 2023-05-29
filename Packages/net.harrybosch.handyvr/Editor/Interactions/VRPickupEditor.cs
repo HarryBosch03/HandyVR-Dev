@@ -1,6 +1,5 @@
 using HandyVR.Bindables.Pickups;
 using UnityEditor;
-using UnityEngine;
 using static UnityEditor.EditorGUILayout;
 using static UnityEngine.GUILayout;
 

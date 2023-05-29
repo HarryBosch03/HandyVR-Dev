@@ -1,4 +1,5 @@
 ﻿using System;
+using HandyVR.Interfaces;
 using UnityEngine;
 
 namespace HandyVR.Bindables
@@ -6,10 +7,11 @@ namespace HandyVR.Bindables
     /// <summary>
     /// Class used to track a binding between a <see cref="bindable">Bindable Object</see> and a Pose.
     /// </summary>
+    [Serializable]
     public class VRBinding
     {
-        public readonly VRBindable bindable;
-        public readonly IBindingTarget target;
+        public readonly IVRBindable bindable;
+        public readonly IVRBindingTarget target;
         public bool active;
 
         private Vector3 lastPosition;
@@ -20,7 +22,7 @@ namespace HandyVR.Bindables
         /// </summary>
         /// <param name="bindable">Object that will be bound</param>
         /// <param name="target">Target Object to bind to</param>
-        public VRBinding(VRBindable bindable, IBindingTarget target)
+        public VRBinding(IVRBindable bindable, IVRBindingTarget target)
         {
             if (bindable.ActiveBinding) bindable.ActiveBinding.Deactivate();
 
@@ -40,16 +42,15 @@ namespace HandyVR.Bindables
         /// </summary>
         public void Deactivate()
         {
+            if (!active) return;
+            
+            active = false;
             bindable.OnBindingDeactivated(this);
             target.OnBindingDeactivated(this);
             
-            if (!active) return;
-
-
             Utility.DeferredCall.Wait(
                 () => Utility.Physics.IgnoreCollision(bindable.gameObject, target.gameObject, false),
                 new WaitForSeconds(0.2f));
-            active = false;
         }
 
         public static Func<bool> GetAreClear(GameObject a, GameObject b)
@@ -80,9 +81,9 @@ namespace HandyVR.Bindables
         public bool Valid()
         {
             if (!active) return false;
-            if (!bindable) return false;
+            if (!IVRBindable.Valid(bindable)) return false;
             if (target == null) return false;
-
+            
             return true;
         }
 

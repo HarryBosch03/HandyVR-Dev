@@ -1,3 +1,4 @@
+using HandyVR.Interfaces;
 using HandyVR.Player;
 using HandyVR.Player.Input;
 using HandyVR.Switches;
@@ -20,7 +21,19 @@ namespace HandyVR.Bindables.Pickups
         [Space] 
         [SerializeField] private ParticleSystem scannerFX;
 
-        public void Trigger(PlayerHand hand, VRBindable bindable, HandInput.InputWrapper input)
+        public void InputCallback(PlayerHand hand, VRBindable bindable, IVRBindable.InputType type, HandInput.InputWrapper input)
+        {
+            switch (type)
+            {
+                case IVRBindable.InputType.Trigger:
+                    Scan(input);
+                    break;
+                default:
+                    return;
+            }
+        }
+
+        private void Scan(HandInput.InputWrapper input)
         {
             uiText.text = string.Empty;
 

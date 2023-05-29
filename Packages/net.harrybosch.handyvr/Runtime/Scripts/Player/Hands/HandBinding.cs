@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using HandyVR.Bindables;
+using HandyVR.Interfaces;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace HandyVR.Player.Hands
 {
@@ -9,7 +9,7 @@ namespace HandyVR.Player.Hands
     /// Submodule used for managing the <see cref="PlayerHand"/>s current binding.
     /// </summary>
     [System.Serializable]
-    public class HandBinding : IBindingTarget
+    public class HandBinding : IVRBindingTarget
     {
         [Tooltip("The radius to search for a pickup when the grab button is pressed")]
         [SerializeField] private float pickupRange = 0.2f;
@@ -40,7 +40,7 @@ namespace HandyVR.Player.Hands
 
         public bool IsBindingFlipped => hand.Flipped;
         
-        public int BindingPriority => IBindingTarget.HandPriority;
+        public int BindingPriority => IVRBindingTarget.HandPriority;
         public GameObject gameObject => hand.gameObject;
         public Transform transform => hand.transform;
 
@@ -217,7 +217,7 @@ namespace HandyVR.Player.Hands
             // Try to pickup the closest object to the hand.
             // If none can be found, try to create a detached binding with
             // whatever is being pointed at.
-            var pickup = VRBindable.GetPickup(hand.transform.position, pickupRange);
+            var pickup = VRBindable.GetBindable(hand.transform.position, pickupRange);
             if (!pickup)
             {
                 TryGetDetachedBinding();

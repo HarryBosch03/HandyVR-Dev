@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using HandyVR.Bindables.Pickups;
+using HandyVR.Interfaces;
 using HandyVR.Player;
 using HandyVR.Player.Input;
 using UnityEngine;
@@ -9,39 +10,18 @@ namespace HandyVR.Bindables
     /// <summary>
     /// The base for objects that can be bound, either via hands, sockets, etc...
     /// </summary>
-    public abstract class VRBindable : MonoBehaviour
+    public abstract class VRBindable : MonoBehaviour, IVRBindable
     {
-        // ReSharper disable once InconsistentNaming
-        private Rigidbody rigidbody_DoNotUse;
-
-        public Rigidbody Rigidbody
-        {
-            get
-            {
-                if (!rigidbody_DoNotUse) rigidbody_DoNotUse = GetRigidbody();
-                return rigidbody_DoNotUse;
-            }
-        }
-        
         public VRBinding ActiveBinding { get; private set; }
+        public abstract Rigidbody Rigidbody { get; }
 
-        /// <summary>
-        /// The handle that will be used when matching the Binding Pose
-        /// TODO Needs Implementation.
-        /// </summary>
-        public Transform Handle { get; set; }
-        public virtual Rigidbody GetRigidbody() => GetComponent<Rigidbody>();
-        
         public static readonly List<VRBindable> All = new();
 
         public Vector3 BindingPosition => ActiveBinding.target.BindingPosition;
         public Quaternion BindingRotation => ActiveBinding.target.BindingRotation;
         public bool BindingFlipped => ActiveBinding.target.IsBindingFlipped;
-
-        protected virtual void Awake()
-        {
-            Handle = transform;
-        }
+        
+        public bool IsValid() => this;
 
         protected virtual void OnEnable()
         {
@@ -65,12 +45,12 @@ namespace HandyVR.Bindables
         /// <param name="from"></param>
         /// <param name="range"></param>
         /// <returns></returns>
-        public static VRBindable GetPickup(Vector3 from, float range)
+        public static VRBindable GetBindable(Vector3 from, float range)
         {
             VRBindable res = null;
             foreach (var pickup in All)
             {
-                var d1 = (pickup.Handle.position - from).sqrMagnitude;
+                var d1 = (pickup.transform.position - from).sqrMagnitude;
                 if (d1 > range * range) continue;
                 if (!res)
                 {
@@ -78,7 +58,7 @@ namespace HandyVR.Bindables
                     continue;
                 }
 
-                var d2 = (res.Handle.position - from).sqrMagnitude;
+                var d2 = (res.transform.position - from).sqrMagnitude;
                 if (d1 < d2)
                 {
                     res = pickup;
@@ -94,12 +74,12 @@ namespace HandyVR.Bindables
         /// </summary>
         /// <param name="hand">The hand providing the input</param>
         /// <param name="action">The action that was called</param>
-        public void Trigger(PlayerHand hand, HandInput.InputWrapper action)
+        public void InputCallback(PlayerHand hand, IVRBindable.InputType inputType, HandInput.InputWrapper action)
         {
             var listeners = GetComponentsInChildren<IVRBindableListener>();
             foreach (var listener in listeners)
             {
-                listener.Trigger(hand, this, action);
+                listener.InputCallback(hand, this, inputType, action);
             }
         }
     }

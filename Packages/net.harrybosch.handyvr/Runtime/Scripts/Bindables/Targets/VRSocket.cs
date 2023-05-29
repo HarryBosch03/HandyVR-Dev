@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using HandyVR.Bindables.Pickups;
+using HandyVR.Interfaces;
 using UnityEngine;
 
 namespace HandyVR.Bindables.Targets
@@ -11,7 +12,7 @@ namespace HandyVR.Bindables.Targets
     [SelectionBase]
     [DisallowMultipleComponent]
     [AddComponentMenu("HandyVR/Socket", Reference.AddComponentMenuOrder.Components)]
-    public sealed class VRSocket : MonoBehaviour, IBindingTarget
+    public sealed class VRSocket : MonoBehaviour, IVRBindingTarget
     {
         [Tooltip("Used for Collision Ignorance")] [SerializeField]
         private GameObject root;
@@ -37,9 +38,9 @@ namespace HandyVR.Bindables.Targets
         public Vector3 BindingPosition => transform.position;
         public Quaternion BindingRotation => transform.rotation;
         public bool IsBindingFlipped => false;
-        public int BindingPriority => IBindingTarget.SocketPriority;
-        GameObject IBindingTarget.gameObject => root;
-        Transform IBindingTarget.transform => root.transform;
+        public int BindingPriority => IVRBindingTarget.SocketPriority;
+        GameObject IBehaviour.gameObject => root;
+        Transform IBehaviour.transform => root.transform;
 
         private void Awake()
         {
