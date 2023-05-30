@@ -6,7 +6,7 @@ using HandyVR.Player.Input;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-namespace Interactions.Pickups
+namespace Code.Scripts.Interactions.Pickups
 {
     [RequireComponent(typeof(VRPickup))]
     public class SprayCan : MonoBehaviour, IVRBindableListener

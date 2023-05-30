@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Animation
+namespace Code.Scripts.Animation
 {
     [System.Serializable]
     public class IK

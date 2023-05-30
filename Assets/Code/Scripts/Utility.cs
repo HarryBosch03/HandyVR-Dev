@@ -1,21 +1,24 @@
 ﻿using UnityEngine;
 
-public static class Utility
+namespace Code.Scripts
 {
-    public static float Remap(float v, float iMin, float iMax, float oMin, float oMax)
+    public static class Utility
     {
-        return Mathf.Lerp(oMin, oMax, Mathf.InverseLerp(iMin, iMax, v));
-    }
-
-    public static void IgnoreCollision(GameObject a, GameObject b, bool ignore)
-    {
-        var acl = a.GetComponentsInChildren<Collider>(true);
-        var bcl = b.GetComponentsInChildren<Collider>(true);
-
-        foreach (var ac in acl)
-        foreach (var bc in bcl)
+        public static float Remap(float v, float iMin, float iMax, float oMin, float oMax)
         {
-            Physics.IgnoreCollision(ac, bc, ignore);
+            return Mathf.Lerp(oMin, oMax, Mathf.InverseLerp(iMin, iMax, v));
+        }
+
+        public static void IgnoreCollision(GameObject a, GameObject b, bool ignore)
+        {
+            var acl = a.GetComponentsInChildren<Collider>(true);
+            var bcl = b.GetComponentsInChildren<Collider>(true);
+
+            foreach (var ac in acl)
+            foreach (var bc in bcl)
+            {
+                Physics.IgnoreCollision(ac, bc, ignore);
+            }
         }
     }
 }

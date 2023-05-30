@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-namespace UI
+namespace Code.Scripts.UI
 {
     [RequireComponent(typeof(Button))]
     public class SceneReset : MonoBehaviour

@@ -1,7 +1,7 @@
 using HandyVR.Switches;
 using UnityEngine;
 
-namespace Interactions
+namespace Code.Scripts.Interactions
 {
     [SelectionBase]
     [DisallowMultipleComponent]

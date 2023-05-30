@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using Editor;
 using UnityEditor;
 using UnityEngine;
 
-namespace Editor.Automation
+namespace Code.Editor.Automation
 {
     public class CreateEditors : EditorWindow
     {

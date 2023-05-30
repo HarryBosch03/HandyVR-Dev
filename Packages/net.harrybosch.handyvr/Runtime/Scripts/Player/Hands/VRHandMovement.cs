@@ -112,6 +112,7 @@ namespace HandyVR.Player.Hands
             dislocated = dislocationPercent > 1.0f;
             dislocationPercent = Mathf.Clamp01(dislocationPercent);
 
+            dislocationLines.enabled = dislocated;
             dislocationLines.SetLine(rb.position, newPosition, true, lineSubdivisions);
             dislocationLines.widthMultiplier = baseLineWidth * dislocationPercent;
         }

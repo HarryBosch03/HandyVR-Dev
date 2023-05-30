@@ -1,7 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace Editor.Automation
+namespace Code.Editor.Automation
 {
     public static class BoxColliderOfBestFit
     {

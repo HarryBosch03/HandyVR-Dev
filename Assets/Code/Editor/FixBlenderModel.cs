@@ -1,6 +1,6 @@
 using UnityEditor;
 
-namespace Editor
+namespace Code.Editor
 {
     public sealed class FixBlenderModel : AssetPostprocessor
     {

@@ -18,16 +18,20 @@ namespace HandyVR.Switches
         [SerializeField] private float smoothing = 0.1f;
         
         private Quaternion lastRotation;
-        private float tAngle, cAngle;
+        [SerializeField] private float tAngle, cAngle;
         
         public override float Value
         {
             get
             {
-                if (!limit) return cAngle / 360.0f;
+                var v = limit ? Mathf.InverseLerp(range.x, range.y, cAngle) : cAngle / 360.0f;
+                if (steps > 1)
+                {
+                    var s = limit ? steps - 1 : steps;
+                    v = Mathf.Round(v * s);
+                }
 
-                var p = Mathf.InverseLerp(range.x, range.y, cAngle);
-                return steps > 0 ? Mathf.Round(p * steps) / steps : p;
+                return v;
             }   
         }
 
@@ -81,12 +85,15 @@ namespace HandyVR.Switches
                 tAngle = Mathf.Clamp(tAngle, range.x, range.y);
             }
 
-            if (steps > 0)
+            if (steps > 1)
             {
-                var p = limit ? Mathf.InverseLerp(range.x, range.y, cAngle) : cAngle / 360.0f;
-                p = Mathf.Round(p * steps) / steps;
-                var t = limit ? Mathf.Lerp(range.x, range.y, p) : p * 360.0f;
-                cAngle += Mathf.DeltaAngle(t, cAngle) / smoothing * Time.deltaTime;
+                var t = limit ? Mathf.InverseLerp(range.x, range.y, tAngle) : tAngle / 360.0f;
+                var s = limit ? (steps - 1) : steps;
+                
+                t = Mathf.Round(t * s) / s;
+                t = limit ? Mathf.Lerp(range.x, range.y, t) : t * 360.0f;
+                
+                cAngle += (t - cAngle) / smoothing * Time.deltaTime;
             }
             else
             {

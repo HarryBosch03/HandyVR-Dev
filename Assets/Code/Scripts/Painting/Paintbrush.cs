@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Painting
+namespace Code.Scripts.Painting
 {
     [SelectionBase]
     [DisallowMultipleComponent]

@@ -2,7 +2,7 @@ using System.Globalization;
 using TMPro;
 using UnityEngine;
 
-namespace UI
+namespace Code.Scripts.UI
 {
     [SelectionBase]
     [DisallowMultipleComponent]

@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using Animation;
+using Code.Scripts.Animation;
 using UnityEngine;
 
-namespace AI
+namespace Code.Scripts.AI
 {
     [SelectionBase]
     [DisallowMultipleComponent]
