@@ -1,0 +1,4 @@
+[submodule "Packages/net.harrybosch.handyvr"]
+	path = Packages/net.harrybosch.handyvr
+	url = https://github.com/HarryBosch03/HandyVR.git
+	branch = unstable
