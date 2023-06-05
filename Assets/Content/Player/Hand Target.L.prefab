@@ -107,7 +107,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4278071231751960008}
   m_Layer: 0
-  m_Name: Finger..3.1
+  m_Name: Finger.3.1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2073,7 +2073,7 @@ MonoBehaviour:
   pickupRange: 0.2
   pointingAtAngle: 15
   bindingOffsetTranslation: {x: 0, y: 0, z: 0}
-  bindingOffsetRotation: {x: 0, y: 0, z: 180}
+  bindingOffsetRotation: {x: 90, y: 0, z: 0}
   lines: {fileID: 5029589130065269683}
 --- !u!114 &2309033147005434223
 MonoBehaviour:
@@ -2088,6 +2088,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   smoothing: 0.1
+  handName: Hand
+  fingerName: Finger.{0}.{1}
 --- !u!114 &3624446681784877749
 MonoBehaviour:
   m_ObjectHideFlags: 0

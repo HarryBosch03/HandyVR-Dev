@@ -1,6 +1,4 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using HandyVR.Bindables;
 using HandyVR.Bindables.Pickups;
 using HandyVR.Interfaces;
