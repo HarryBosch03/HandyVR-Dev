@@ -1,37 +1,19 @@
-Shader "TextMeshPro/Distance Field (Surface)" {
+// Simplified version of the SDF Surface shader :
+// - No support for Bevel, Bump or envmap
+// - Diffuse only lighting
+// - Fully supports only 1 directional light. Other lights can affect it, but it will be per-vertex/SH.
+
+Shader "TextMeshPro/Mobile/Distance Field (Surface)" {
 
 Properties {
 	_FaceTex			("Fill Texture", 2D) = "white" {}
-	_FaceUVSpeedX		("Face UV Speed X", Range(-5, 5)) = 0.0
-	_FaceUVSpeedY		("Face UV Speed Y", Range(-5, 5)) = 0.0
 	[HDR]_FaceColor		("Fill Color", Color) = (1,1,1,1)
 	_FaceDilate			("Face Dilate", Range(-1,1)) = 0
 
 	[HDR]_OutlineColor	("Outline Color", Color) = (0,0,0,1)
 	_OutlineTex			("Outline Texture", 2D) = "white" {}
-	_OutlineUVSpeedX	("Outline UV Speed X", Range(-5, 5)) = 0.0
-	_OutlineUVSpeedY	("Outline UV Speed Y", Range(-5, 5)) = 0.0
 	_OutlineWidth		("Outline Thickness", Range(0, 1)) = 0
 	_OutlineSoftness	("Outline Softness", Range(0,1)) = 0
-
-	_Bevel				("Bevel", Range(0,1)) = 0.5
-	_BevelOffset		("Bevel Offset", Range(-0.5,0.5)) = 0
-	_BevelWidth			("Bevel Width", Range(-.5,0.5)) = 0
-	_BevelClamp			("Bevel Clamp", Range(0,1)) = 0
-	_BevelRoundness		("Bevel Roundness", Range(0,1)) = 0
-
-	_BumpMap 			("Normalmap", 2D) = "bump" {}
-	_BumpOutline		("Bump Outline", Range(0,1)) = 0.5
-	_BumpFace			("Bump Face", Range(0,1)) = 0.5
-
-	_ReflectFaceColor	    ("Face Color", Color) = (0,0,0,1)
-	_ReflectOutlineColor	("Outline Color", Color) = (0,0,0,1)
-	_Cube 					("Reflection Cubemap", Cube) = "black" { /* TexGen CubeReflect */ }
-	_EnvMatrixRotation  	("Texture Rotation", vector) = (0, 0, 0, 0)
-	[HDR]_SpecColor		    ("Specular Color", Color) = (0,0,0,1)
-
-	_FaceShininess		("Face Shininess", Range(0,1)) = 0
-	_OutlineShininess	("Outline Shininess", Range(0,1)) = 0
 
 	[HDR]_GlowColor		("Color", Color) = (0, 1, 0, 0.5)
 	_GlowOffset			("Offset", Range(-1,1)) = 0
@@ -67,16 +49,19 @@ Properties {
 
 SubShader {
 
-	Tags { "Queue"="Transparent" "IgnoreProjector"="True" "RenderType"="Transparent" }
+	Tags {
+		"Queue"="Transparent"
+		"IgnoreProjector"="True"
+		"RenderType"="Transparent"
+	}
 
 	LOD 300
 	Cull [_CullMode]
 
 	CGPROGRAM
-	#pragma surface PixShader BlinnPhong alpha:blend vertex:VertShader nolightmap nodirlightmap
+	#pragma surface PixShader Lambert alpha:blend vertex:VertShader noforwardadd nolightmap nodirlightmap
 	#pragma target 3.0
 	#pragma shader_feature __ GLOW_ON
-	#pragma glsl
 
 	#include "TMPro_Properties.cginc"
 	#include "TMPro.cginc"
@@ -86,16 +71,14 @@ SubShader {
 
 	struct Input
 	{
-		fixed4	color			: COLOR;
+		fixed4	color		: COLOR;
 		float2	uv_MainTex;
 		float2	uv2_FaceTex;
 		float2  uv2_OutlineTex;
-		float2	param;						// Weight, Scale
+		float2	param;					// Weight, Scale
 		float3	viewDirEnv;
 	};
 
-
-	#define BEVEL_ON 1
 	#include "TMPro_Surface.cginc"
 
 	ENDCG
@@ -108,9 +91,7 @@ SubShader {
 		Offset 1, 1
 
 		Fog {Mode Off}
-		ZWrite On
-		ZTest LEqual
-		Cull Off
+		ZWrite On ZTest LEqual Cull Off
 
 		CGPROGRAM
 		#pragma vertex vert
@@ -137,16 +118,16 @@ SubShader {
 			TRANSFER_SHADOW_CASTER(o)
 			o.uv = TRANSFORM_TEX(v.texcoord, _MainTex);
 			o.uv2 = TRANSFORM_TEX(v.texcoord, _OutlineTex);
-			o.alphaClip = (1.0 - _OutlineWidth * _ScaleRatioA - _FaceDilate * _ScaleRatioA) / 2;
+			o.alphaClip = o.alphaClip = (1.0 - _OutlineWidth * _ScaleRatioA - _FaceDilate * _ScaleRatioA) / 2;
 			return o;
 		}
 
 		uniform sampler2D _MainTex;
 
-		float4 frag(Varyings i) : COLOR
+		float4 frag(Varyings input) : COLOR
 		{
-			fixed4 texcol = tex2D(_MainTex, i.uv).a;
-			clip(texcol.a - i.alphaClip);
+			fixed4 texcol = tex2D(_MainTex, input.uv).a;
+			clip(texcol.a - input.alphaClip);
 			SHADOW_CASTER_FRAGMENT(i)
 		}
 		ENDCG
@@ -155,4 +136,3 @@ SubShader {
 
 CustomEditor "TMPro.EditorUtilities.TMP_SDFShaderGUI"
 }
-
