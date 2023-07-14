@@ -124,8 +124,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5974928670606848030}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.075, z: 0}
-  m_LocalScale: {x: 0.05, y: 0.05, z: 0.05}
+  m_LocalPosition: {x: 0, y: 0.0375, z: 0}
+  m_LocalScale: {x: 0.025, y: 0.025, z: 0.025}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 5974928670903819373}
@@ -255,7 +255,7 @@ Transform:
   m_GameObject: {fileID: 5974928671452168293}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.1, y: 0.1, z: 0.1}
+  m_LocalScale: {x: 0.05, y: 0.05, z: 0.05}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 5974928670903819373}
@@ -702,7 +702,6 @@ MonoBehaviour:
   flipAxis: {x: 1, y: 0, z: 0}
   pointTransform: {fileID: 5974928671705628178}
   handModel: {fileID: 5974928670903819373}
-  resetTransform: {fileID: 0}
   resetDistanceThreshold: 2
 --- !u!114 &5974928671714791065
 MonoBehaviour:
